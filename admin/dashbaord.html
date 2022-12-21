@@ -17,7 +17,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary py-3 mb-5">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/">回到前台</a>
+            <a class="navbar-brand fw-bold">後台儀錶板</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -68,7 +68,6 @@
 
 
 
-
     <!-- editModal -->
     <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModal" aria-hidden="true">
         <div class="modal-dialog">
@@ -85,14 +84,17 @@
                             <input type="text" class="form-control" id="spot-title" aria-describedby="spot-title">
                         </div>
                         <div class="mb-3">
-                            <label for="spot-imageUrl" class="form-label">景點圖片網址</label>
-                            <input type="text" class="form-control" id="spot-imageUrl" aria-describedby="spot-title">
+                            <label for="spot-category" class="form-label">景點類型</label>
+                            <input type="text" class="form-control" id="spot-category" aria-describedby="spot-category">
                         </div>
                         <div class="mb-3">
-                            <label for="spot-title" class="form-label">景點內容</label>
-                            <textarea class="form-control" aria-label="With textarea" id="spot-constent"></textarea>
+                            <label for="spot-imageUrl" class="form-label">景點圖片網址</label>
+                            <input type="text" class="form-control" id="spot-imageUrl" aria-describedby="spot-imageUrl">
                         </div>
-
+                        <div class="mb-3">
+                            <label for="spot-content" class="form-label">景點內容</label>
+                            <textarea class="form-control" aria-label="With textarea" id="spot-content"></textarea>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -124,63 +126,11 @@
 
         // DOM
         const adminSpotList = document.querySelector('#admin-spotList');
+        const editConfirmBtn = document.querySelector('#editConfirmBtn');
 
 
-
-
-        // 景點資料 - 取得景點資料
-        function getSpots() {
-            api.apiAdminGetSpot()
-                .then(res => {
-                    const { data } = res;
-                    renderSpotList(data);
-                })
-                .catch(err => {
-                    console.log(err.response);
-                })
-        };
-
-
-
-        // 景點資料 - 渲染列表
-        function renderSpotList(data) {
-            adminSpotList.innerHTML = data.map((spot, index) => {
-                return `
-                <tr data-spot-id="${spot.id}">
-                <th class="text-primary" scope="row">${index + 1}</th>
-                     <td>${spot.title}</td>
-                    <td>${spot.content}</td>
-                    <td>
-                     <div class="text-end">
-                         <!-- editModal btn-->
-                        <button type="button" class="btn btn-warning" data-bs-toggle="modal"
-                             data-bs-target="#editModal" data-btn-type="editBtn">
-                            編輯
-                         </button>
-
-                        <button type="button" class="btn btn-danger" data-btn-type="delBtn">刪除</button>
-                        </div>
-                    </td>
-                </tr>`
-            }).join('')
-        };
-
-
-
-        // 景點資料 - 新增
-
-
-
-
-
-        // 景點資料 - 刪除單筆景點資料
-
-
-
-
-
-        // 景點資料 - 編輯功能
-
+        // 景點 id 
+        let spotId = 1;
 
 
 
@@ -189,6 +139,7 @@
         function getLoggedID() {
             return localStorage.getItem('userId') || 0;
         };
+
 
 
         // 取得 使用者資料，判斷是否為管理者
@@ -227,6 +178,151 @@
                     };
                 })
         };
+
+
+
+
+        // 景點資料 - 取得所有景點資料
+        function getSpots() {
+            api.apiAdminGetSpots()
+                .then(res => {
+                    const { data } = res;
+                    renderSpotList(data);
+                })
+                .catch(err => {
+                    console.log(err.response);
+                })
+        };
+
+
+
+        // 景點資料 - 渲染列表
+        function renderSpotList(data) {
+            adminSpotList.innerHTML = data.map((spot, index) => {
+                return `
+                <tr data-spot-id="${spot.id}">
+                <th class="text-primary" scope="row">${index + 1}</th>
+                     <td>${spot.title}</td>
+                    <td>${spot.content}</td>
+                    <td>
+                     <div class="text-end">
+                         <!-- editModal btn-->
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal"
+                             data-bs-target="#editModal" data-btn-type="editBtn">
+                            編輯
+                         </button>
+
+                        <button type="button" class="btn btn-danger" data-btn-type="delBtn">刪除</button>
+                        </div>
+                    </td>
+                </tr>`
+            }).join('')
+        };
+
+
+
+        // 景點資料 - 新增景點資料
+        function addSpotData() {
+
+        };
+
+
+
+
+
+        // 景點資料 - 功能整合(編輯、刪除)
+        adminSpotList.addEventListener('click', (e) => {
+            if (e.target.nodeName !== "BUTTON") return;
+
+            spotId = e.target.closest('tr').dataset.spotId;
+            let btnType = e.target.dataset.btnType;
+
+            // 編輯
+            if (btnType === "editBtn") {
+                api.apiAdminGetSpot(spotId)
+                    .then(res => {
+                        const { data, status } = res;
+                        console.log(res);
+
+                        if (status === 200) {
+                            // 取得 modal DOM 將資料寫入
+                            document.querySelector('#spot-title').value = data.title;
+                            document.querySelector('#spot-category').value = data.category;
+                            document.querySelector('#spot-imageUrl').value = data.image;
+                            document.querySelector('#spot-content').value = data.content;
+                        };
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    })
+                // editSpotData(spotId);
+            };
+
+            // 刪除
+            if (btnType === "delBtn") {
+                delSpotData(spotId)
+            };
+        });
+
+
+
+
+
+        // 景點資料 - 刪除單筆景點資料
+        function delSpotData(id) {
+            console.log("刪除", id);
+        };
+
+
+
+
+
+
+        // 景點資料 - 編輯功能
+        editConfirmBtn.addEventListener('click', (e) => {
+
+            const userId = getLoggedID();
+            const data = {
+                category: document.querySelector('#spot-category').value,
+                title: document.querySelector('#spot-title').value,
+                image: document.querySelector('#spot-imageUrl').value,
+                content: document.querySelector('#spot-content').value,
+                userId,
+            };
+
+
+
+            api.apiAdminUpdateSpot(spotId, data)
+                .then(res => {
+                    console.log(res);
+
+                    const isOK = res.status === 201 || res.status === 200;
+                    if (isOK) {
+
+                        swalMassage('修改資料成功', 'success', 500);
+
+                        setTimeout(() => {
+                            window.location.replace('./dashbaord.html');
+                        }, 300);
+
+
+                        // history.go(-1);
+                    };
+                })
+                .catch(err => {
+                    console.log(err.response.data);
+                })
+
+        });
+
+
+
+
+        // 景點資料 - 更新
+
+
+
+
 
 
         // 初始化

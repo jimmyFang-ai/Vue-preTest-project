@@ -44,6 +44,21 @@ userRequest.interceptors.request.use(
 );
 
 
+adminRequest.interceptors.request.use(
+    (config) => {
+        // 從 localStorage 將 token 取出
+        const token = localStorage.getItem('token');
+
+        // 如果 token 存在的話，則帶入到 headers 當中
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (err) => Promise.reject(err),
+);
+
+
 
 // 課程資訊 API(不用登入)
 // 所有課程資料
@@ -77,8 +92,13 @@ export const apiRemoveBookmarks = (id) => userRequest.delete(`/600/bookmarks/${i
 
 // 景點 (後台權限)
 // 取得所有景點(路由代碼:664 ， 寫入有 token 皆可，讀取不用 token)
-export const apiAdminGetSpot = () => adminRequest.get('/664/spots');
+export const apiAdminGetSpots = () => adminRequest.get('/664/spots');
+// 取得單筆景點(路由代碼:664 ， 寫入有 token 皆可，讀取不用 token)
+export const apiAdminGetSpot = (id) => adminRequest.get(`/664/spots/${id}`);
 // 移除單筆景點(路由代碼:664 ， 寫入有 token 皆可，讀取不用 token)
 export const apiAdminRemoveSpot = (id) => adminRequest.delete(`/664/spots/${id}`);
+
+// 移除更新整筆景點(路由代碼:664 ， 寫入有 token 皆可，讀取不用 token)
+export const apiAdminUpdateSpot = (id, data) => adminRequest.put(`/664/spots/${id}`, data);
 
 
