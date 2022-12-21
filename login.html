@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅遊景點 - 登入</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <link rel="stylesheet" href="./stylesheets/all.css">
+</head>
+
+<body>
+
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light py-3 mb-5">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">台灣景點導覽</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+
+                <!-- 參訪者 -->
+                <ul class="navbar-nav " id="guest-menu">
+                    <li class="nav-item mt-5 mt-lg-0">
+                        <a class=" btn btn-primary " aria-current="page" href="./signup.html">註冊/登入</a>
+                    </li>
+                </ul>
+
+
+                <!-- 使用者 -->
+                <ul class="navbar-nav justtify-content-center  align-items-lg-center" id="user-menu">
+                </ul>
+
+            </div>
+        </div>
+    </nav>
+
+
+    <section>
+        <div class="container">
+
+            <h2 class="fw-bold mb-5 text-center"> 會員登入</h2>
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <form class="p-5 shadow">
+
+                        <div class="form-floating mb-5">
+                            <input type="email" class="form-control" id="userEmail" placeholder="name@example.com">
+                            <label for="userEmail">Email 帳號</label>
+                        </div>
+                        <div class="form-floating mb-5">
+                            <input type="password" class="form-control" id="userPassword" placeholder="Password">
+                            <label for="userPassword">密碼</label>
+                        </div>
+
+                        <div class="mb-3 ">
+                            還不是會員?
+                            <a class="ps-3" href="./signup.html">註冊</a>
+                        </div>
+
+
+                        <button type="button" class="btn btn-primary btn-lg py-2 px-5" id="login-btn">送出</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.1/dist/umd/popper.min.js"
+        integrity="sha384-W8fXfP3gkOKtndU4JGtKDvXbO53Wy8SZCQHczT5FMiiqmQfUpWbYdTil/SxwZgAN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.min.js"
+        integrity="sha384-skAcpIdS7UcVUC05LJ9Dxay8AXcDYfBJqt1CJ85S/CFujBsIzCIv+l9liuYLaMQ/"
+        crossorigin="anonymous"></script>
+
+
+    <!-- validate.js  -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/validate.js/0.13.1/validate.min.js"></script>
+
+    <!-- sweetalert2.js -->
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+    <script type="module">
+
+
+        import { swalMassage } from './js/helpers/utils.js';
+
+        import * as api from './js/helpers/api.js';
+
+
+        // DOM
+        const userEmail = document.querySelector('#userEmail');
+        const userPassword = document.querySelector('#userPassword');
+        const loginBtn = document.querySelector('#login-btn');
+        const userMenu = document.querySelector('#user-menu');
+
+
+
+
+
+
+        // // 登入功能(token 有 一小時效性)
+        function login() {
+
+            const data = {
+                email: userEmail.value.trim(),
+                password: userPassword.value.trim()
+            };
+
+            const hasInput = data.email && data.password;
+
+            if (hasInput) {
+                api.apiLogin(data)
+                    .then((res) => {
+                        console.log(res);
+
+                        if (res.status === 200) {
+                            const { accessToken, user } = res.data;
+                            saveUserToLocalForLogin(accessToken, user);
+                            swalMassage(`${user.email} 您好，已成功登入`, 'success', 600);
+
+
+                            // 判斷是 role 是 user 還是 admin
+                            let redirectPath = '/';
+                            // // const isAdmin = response.data?.user?.role?.includes('admin');
+                            // const isAdmin = response.data?.user?.role === 'admin';
+                            // if (isAdmin) {
+                            //     redirectPath = 'admin/desk.html';
+                            // }
+
+
+                            //  0.15 秒後 導到首頁
+                            setTimeout(() => {
+                                console.log('Redirect!');
+                                window.location.replace(redirectPath);
+                            }, 150);
+                        };
+
+                    })
+                    .catch((error) => {
+                        console.log(error?.response?.data || error);
+                    })
+            };
+        };
+
+
+
+        // 儲存 token 與 userId
+        function saveUserToLocalForLogin(accessToken, user) {
+            // 登入後將 token 與 userId  寫入 local storage
+            localStorage.setItem('token', accessToken);
+            localStorage.setItem('userId', user.id);
+            localStorage.setItem('nickname', user.name);
+            // localStorage.setItem('avatar', user.avatar);
+        };
+
+
+
+
+        // 確認是否持續登入
+        function localLoginChecker() {
+            console.log('localLoginChecker!');
+
+            const localJWT = localStorage.getItem('token');
+            console.log(localJWT);
+
+            if (localJWT) {
+                const nickname = localStorage.getItem('nickname');
+                const avatar = localStorage.getItem('avatar');
+
+                console.log(nickname, avatar);
+                // // btnUserMenu.innerHTML = templateUserMenu({ avatar, nickname });
+                userMenu.innerHTML = templateUserMenu(avatar, nickname);
+            };
+        };
+
+
+
+        function templateUserMenu(avatar, nickname) {
+            return `
+            <li class="me-lg-3">
+                        <div class="ratio ratio-1x1">
+                          <img  class="img-fluid rounded-circle" src=${avatar || 'https://lh3.googleusercontent.com/jiB3hF3i1zRXuIJPCYZaDb5ntAqQDDACVf72I2ZFUEqIOQSJzMiujISkhseqOJ5ts2Y1ZtNfYh-lYt8HmIayprzpg0aX3C0ao7OxefITgcE_rsLm8QjIhETmTHZHok6RqhAJo0jHvYCqTK04thEHdHWo9wkonCBqAlt8C4FtG5EsVPkKONc00dMAcvk_3pEQthg7HTzWXFDTKWDRTYKydLL7UhEkp7nZQHxajvc8-Y0gGyG6vM9quqPOYQSyo2_GSYmfcrG9Awgnc8vWvhJWn3rQI9qh3N7_qR5SmAD1hJ4S0rVXNYrxjaGuw4nAWDXy1rWlaSFlIIVDBO2ZaqlLIx41bXQ-ApzqK2HHwZ2OOAlCcnTZsf1NNmKlxmOuemxNakAcpF2a3CrbEgjAkA3564Ef-Na8LEa14PqH0zJvXvuHY9ckKF0NLBCWPrMRuFzJ6h-AucvKT3_OnrGhItlrSDaIiOE8XiSemQr3oLg7Ltb7kPQpnzEY9CRxTqSWy_5Kdsb-4f9ZPXiQpmxq9VhpZl9VHH5X-mgbk8IPUMsChnZJmD5OM3eALlR7UzDJQ0OWnzMY0dB08enocE0lNBidZQh60cAiWIXClUj9JQBs1tFe3JQiylklGIV30j_YNWIcTiIpBdKqoK6Digu1YFrWgN6K5Iu8_ns_yq_6Bu_v969cs98XqRmvbIwijGZCUUWN_q6BsyKeePEE9cKRw70C4s0fN6S5_xRP630pKSQqeMIFJg56geDdOz3WhuumuKyKs7Rrz0lwqqLA83e44T30vM30WqeMMS9vBOwvBBqR50RwKw0LBsy7lqEVs1Lmesrq2HWXRpNCreT3rrrmp0hTMwxkWYBAoRcZl_0EHNEpJ5-UvvjZv9a8K2Y5gooJvxUIq3U8LPaIKROBf3lUJtwAPjMaTGbdoYU7KBDisc4-uGf29jBPutUrTPmdcIUBx6izxyK_kex_om7qjMzGOS5AyUKRgHmZKrM3P44MkuKMEbEc0V0YQZMFmg=s640-no?authuser=0'}
+                             loading="lazy"
+                             alt="Avatar">
+                         </div >
+                    </li>
+                    <li class="me-lg-3">
+                        <strong class="d-none d-sm-block ms-1 px-1">
+                        ${nickname || 'HI!'} 您好!
+                         </strong>
+                   </li>`;
+        };
+
+
+
+
+
+        // 初始化
+        function init() {
+            localLoginChecker();
+            loginBtn.addEventListener('click', () => login());
+        };
+        init();
+
+
+
+
+
+    </script>
+
+
+
+</body>
+
+</html>

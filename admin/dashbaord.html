@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅遊景點 - 後台首頁</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <link rel="stylesheet" href="../stylesheets/all.css">
+</head>
+
+<body>
+
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary py-3 mb-5">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">回到前台</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/">回到前台</a>
+                    </li>
+
+
+                </ul>
+
+            </div>
+        </div>
+    </nav>
+
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5">產品頁面</h2>
+
+            <div class="mb-5 text-end">
+                <button type="button" class="btn btn-lg btn-primary">新增景點 </button>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th width="15">#</th>
+                                    <th width="10">標題</th>
+                                    <th width="75">內容</th>
+                                    <th width="5"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-spotList">
+                                <!-- 動態新增景點資料 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+    <!-- editModal -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">編輯景點資料</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form>
+                        <div class="mb-3">
+                            <label for="spot-title" class="form-label">景點標題</label>
+                            <input type="text" class="form-control" id="spot-title" aria-describedby="spot-title">
+                        </div>
+                        <div class="mb-3">
+                            <label for="spot-imageUrl" class="form-label">景點圖片網址</label>
+                            <input type="text" class="form-control" id="spot-imageUrl" aria-describedby="spot-title">
+                        </div>
+                        <div class="mb-3">
+                            <label for="spot-title" class="form-label">景點內容</label>
+                            <textarea class="form-control" aria-label="With textarea" id="spot-constent"></textarea>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="editConfirmBtn">送出</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.1/dist/umd/popper.min.js"
+        integrity="sha384-W8fXfP3gkOKtndU4JGtKDvXbO53Wy8SZCQHczT5FMiiqmQfUpWbYdTil/SxwZgAN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.min.js"
+        integrity="sha384-skAcpIdS7UcVUC05LJ9Dxay8AXcDYfBJqt1CJ85S/CFujBsIzCIv+l9liuYLaMQ/"
+        crossorigin="anonymous"></script>
+
+    <!-- sweetalert2.js -->
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+    <script type="module">
+
+        // 匯入 共用 API
+        import * as api from '../js/helpers/api.js';
+        import { swalMassage } from '../js/helpers/utils.js';
+
+
+
+        // DOM
+        const adminSpotList = document.querySelector('#admin-spotList');
+
+
+
+
+        // 景點資料 - 取得景點資料
+        function getSpots() {
+            api.apiAdminGetSpot()
+                .then(res => {
+                    const { data } = res;
+                    renderSpotList(data);
+                })
+                .catch(err => {
+                    console.log(err.response);
+                })
+        };
+
+
+
+        // 景點資料 - 渲染列表
+        function renderSpotList(data) {
+            adminSpotList.innerHTML = data.map((spot, index) => {
+                return `
+                <tr data-spot-id="${spot.id}">
+                <th class="text-primary" scope="row">${index + 1}</th>
+                     <td>${spot.title}</td>
+                    <td>${spot.content}</td>
+                    <td>
+                     <div class="text-end">
+                         <!-- editModal btn-->
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal"
+                             data-bs-target="#editModal" data-btn-type="editBtn">
+                            編輯
+                         </button>
+
+                        <button type="button" class="btn btn-danger" data-btn-type="delBtn">刪除</button>
+                        </div>
+                    </td>
+                </tr>`
+            }).join('')
+        };
+
+
+
+        // 景點資料 - 新增
+
+
+
+
+
+        // 景點資料 - 刪除單筆景點資料
+
+
+
+
+
+        // 景點資料 - 編輯功能
+
+
+
+
+
+        // 取得 userId
+        function getLoggedID() {
+            return localStorage.getItem('userId') || 0;
+        };
+
+
+        // 取得 使用者資料，判斷是否為管理者
+        function getUsersData() {
+            const userId = getLoggedID();
+
+            api.apiGetUserInfo(userId)
+                .then(res => {
+                    console.log(res);
+                    const { data, status } = res;
+
+                    if (status === 200) {
+
+                        const isAdmin = res.data?.role === 'admin';
+
+                        // 如果是使用者的話就回到首頁
+                        if (!isAdmin) {
+                            console.log('401!,沒有權限');
+                            window.location.replace('/');
+                        }
+
+                        if (isAdmin) {
+                            getSpots();
+                        };
+
+                    };
+
+                })
+                .catch(err => {
+
+                    // 如果為 401 沒有權限就退回到前台登入頁
+                    if (err?.response?.status === 401) {
+                        console.log('401');
+                        localStorage.clear();
+                        window.location.replace('/login.html');
+                    };
+                })
+        };
+
+
+        // 初始化
+        function init() {
+            // 如果沒有 userId 要回到前台首頁
+            if (!getLoggedID()) {
+                window.location.replace('/');
+            };
+
+
+            getUsersData();
+
+        };
+
+        init();
+
+    </script>
+</body>
+
+</html>

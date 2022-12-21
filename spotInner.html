@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅遊景點 - 景點內頁</title>
+
+
+
+    <!-- google icon Round-->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons+Round" rel="stylesheet">
+    <!--  google icon outline--->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <link rel="stylesheet" href="./stylesheets/all.css">
+</head>
+
+<body>
+
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light py-3 mb-5">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">台灣景點導覽</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+
+                <!-- 參訪者 -->
+                <ul class="navbar-nav " id="guest-menu">
+                    <li class="nav-item mt-5 mt-lg-0">
+                        <a class=" btn btn-primary " aria-current="page" href="./signup.html">註冊/登入</a>
+                    </li>
+                </ul>
+
+
+                <!-- 使用者 -->
+                <ul class="navbar-nav justtify-content-center  align-items-lg-center" id="user-menu">
+                </ul>
+
+            </div>
+        </div>
+    </nav>
+
+
+
+
+    <section class="py-5">
+        <div class="container">
+
+            <div class="row justify-content-center align-items-center gx-lg-5" id="spotInnerInfo">
+                <div class="col">
+                    <div class="ratio ratio-1x1">
+                        <img src="" alt="" id="spot-img">
+                    </div>
+                </div>
+
+                <div class="col">
+                    <h2 class="fw-bold mb-5" id="spot-title"></h2>
+                    <p class="fw-bold" id="bookmarkStatus">未收藏</p>
+                    <button type="button"
+                        class="btn btn-outline-danger    justify-content-center align-items-center p-2 mb-5"
+                        id="addBookmark" style="display: inline-flex;">
+                        <span class="material-icons-round me-2 me-md-3 fs-5 fs-md-4">
+                            bookmark_border
+                        </span>
+                        加入收藏
+                    </button>
+
+
+                    <button type="button" class="btn btn-danger  justify-content-center align-items-center p-2  mb-5"
+                        id="removeBookmark" style="display: none;">
+                        <span class="material-icons-round me-2 me-md-3 fs-5 fs-md-4">
+                            bookmark
+                        </span>
+                        已收藏
+                    </button>
+
+                    <p id="spot-content"></p>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.1/dist/umd/popper.min.js"
+        integrity="sha384-W8fXfP3gkOKtndU4JGtKDvXbO53Wy8SZCQHczT5FMiiqmQfUpWbYdTil/SxwZgAN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.min.js"
+        integrity="sha384-skAcpIdS7UcVUC05LJ9Dxay8AXcDYfBJqt1CJ85S/CFujBsIzCIv+l9liuYLaMQ/"
+        crossorigin="anonymous"></script>
+
+
+    <!-- sweetalert2.js -->
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+    <!-- < 使用者登入才會出現 -->
+    <script type="module" src="./js/helpers/renderUserMenu.js"></script>
+
+
+    <script type="module">
+
+
+
+        // 匯入 共用 API
+        import * as api from './js/helpers/api.js';
+        import { swalMassage } from './js/helpers/utils.js';
+        import { getLoggedID } from './js/helpers/renderUserMenu.js';
+
+
+        // DOM
+        const spotsList = document.querySelector('#spots-list');
+        const addBookmarkBtn = document.querySelector('#addBookmark');
+        const removeBookmarkBtn = document.querySelector('#removeBookmark');
+
+        // 全域變數
+        let bookmarkId = 0;
+
+
+        // 景點列表 - 取得所有景點
+        function getSpot() {
+            const params = new URLSearchParams(document.location.search);
+            const touristSpotId = params.get('touristSpotId');
+            api.apiGetSpot(touristSpotId)
+                .then(res => {
+                    const { data } = res;
+                    renderSpotList(data)
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+        };
+
+
+        // 景點列表 - 渲染列表
+        function renderSpotList(data) {
+            document.querySelector('#spot-img').src = data.image;
+            document.querySelector('#spot-title').textContent = data.title;
+            document.querySelector('#spot-content').textContent = data.content;
+        };
+
+
+        // 收藏景點 - 取得單一收藏景點
+        function getBookmarkStatus() {
+            const params = new URLSearchParams(document.location.search);
+            const touristSpotId = params.get('touristSpotId');
+            const userId = getLoggedID();
+
+            api.apiGetBookmark(userId, touristSpotId)
+                .then(res => {
+                    const { data, status } = res;
+
+                    console.log(res);
+                    // 收藏清單內已經有收藏過課程
+                    if (data.length !== 0) {
+
+                        bookmarkId = data[0].id;
+                        document.querySelector('#bookmarkStatus').textContent = '此景點已收藏';
+                        removeBookmarkBtn.style.display = "inline-flex";
+                        addBookmarkBtn.style.display = "none";
+                    };
+
+
+                    // 收藏清單內沒有此課程
+                    if (data.length === 0) {
+                        document.querySelector('#bookmarkStatus').textContent = '此景點未收藏';
+                        removeBookmarkBtn.style.display = "none";
+                        addBookmarkBtn.style.display = "inline-flex";
+                    };
+
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+        };
+
+
+        // 收藏景點 - 加入收藏
+        function addBookmarks() {
+            const params = new URLSearchParams(document.location.search);
+            const touristSpotId = params.get('touristSpotId');
+            const hasToken = localStorage.getItem('token');
+
+            const data = {
+                userId: getLoggedID(),
+            };
+
+
+            if (hasToken) {
+                api.apiAddBookmarks(touristSpotId, data)
+                    .then(res => {
+                        const { data } = res;
+                        swalMassage('已收藏課程', 'success', 600);
+                        getBookmarkStatus();
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    })
+            } else {
+                swalMassage('請先登入會員', 'warning', 600);
+                setTimeout(() => {
+                    window.location.replace('/login.html');
+                }, 600)
+
+            };
+
+        };
+
+
+        // 收藏景點 - 移除收藏
+        function removeBookmarks() {
+            api.apiRemoveBookmarks(bookmarkId)
+                .then(res => {
+                    if (res.status === 200) {
+                        swalMassage('收藏課程已移除', 'success', 600);
+                        getBookmarkStatus();
+                    };
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        };
+
+
+        // 初始化
+        function init() {
+            getSpot();
+
+            const hasUserId = getLoggedID();
+            // 如果沒有使用者 id ,無法取得 收藏列表狀態
+            if (hasUserId) {
+                getBookmarkStatus();
+            };
+
+            addBookmarkBtn.addEventListener('click', () => addBookmarks());
+            removeBookmarkBtn.addEventListener('click', () => removeBookmarks());
+        };
+
+        init();
+
+    </script>
+
+</body>
+
+</html>
