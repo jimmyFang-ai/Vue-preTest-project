@@ -14,12 +14,6 @@
       "id": 2,
       "role": "user"
     },
-    {
-      "email": "111@yahoo.com.tw",
-      "password": "$2a$10$gfFHDfg.Gqs3OBlQCPdB0.4X9KxnzadD6gMmK.MyECCyj/WtIQ2L2",
-      "name": "111",
-      "id": 3
-    }
   ],
   "spots": [
     {
@@ -52,15 +46,5 @@
     }
   ],
   "bookmarks": [
-    {
-      "userId": "1",
-      "spotId": "2",
-      "id": 1
-    },
-    {
-      "userId": "1",
-      "spotId": "4",
-      "id": 2
-    }
   ]
 }
