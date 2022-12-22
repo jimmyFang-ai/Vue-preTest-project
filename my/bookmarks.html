@@ -117,7 +117,7 @@
                         <div class="card-body">
                             <h5 class="card-title text-truncate text-dark fw-bold mb-3">${spot.title}</h5>
                             <p class="card-text text-dark text-truncate mb-3">${spot.content}</p>
-                            <button data-bookmark-id="${spot.id}" class="btn btn-danger d-inline-flex justify-content-center align-items-center">
+                            <button data-bookmark-id="${bookmark.id}" class="btn btn-danger d-inline-flex justify-content-center align-items-center">
                                 <span class="material-icons-round me-3">
                                 bookmark
                                </span>
@@ -141,7 +141,8 @@
         // 收藏資料 - 移除單一產品收藏
         function removeBookmark(e) {
             if (e.target.nodeName !== "BUTTON") return;
-            let bookmarkId = e.target.dataset.bookmarkId;
+            const bookmarkId = e.target.dataset.bookmarkId;
+            console.log(bookmarkId);
             api.apiRemoveBookmarks(bookmarkId)
                 .then(res => {
                     if (res.status === 200) {

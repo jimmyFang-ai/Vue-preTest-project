@@ -41,7 +41,8 @@
             <h2 class="text-center fw-bold mb-5">產品頁面</h2>
 
             <div class="mb-5 text-end">
-                <button type="button" class="btn btn-lg btn-primary">新增景點 </button>
+                <button type="button" class="btn btn-lg btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#addModal">新增景點 </button>
             </div>
 
             <div class="row">
@@ -105,6 +106,47 @@
         </div>
     </div>
 
+
+    <!-- addModal -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">新增景點資料</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form>
+                        <div class="mb-3">
+                            <label for="add-spot-title" class="form-label">景點標題</label>
+                            <input type="text" class="form-control" id="add-spot-title"
+                                aria-describedby="add-spot-title">
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-spot-category" class="form-label">景點類型</label>
+                            <input type="text" class="form-control" id="add-spot-category"
+                                aria-describedby="add-spot-category">
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-spot-imageUrl" class="form-label">景點圖片網址</label>
+                            <input type="text" class="form-control" id="add-spot-imageUrl"
+                                aria-describedby="add-spot-imageUrl">
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-spot-content" class="form-label">景點內容</label>
+                            <textarea class="form-control" aria-label="With textarea" id="add-spot-content"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="creatConfirmBtn">送出</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.1/dist/umd/popper.min.js"
         integrity="sha384-W8fXfP3gkOKtndU4JGtKDvXbO53Wy8SZCQHczT5FMiiqmQfUpWbYdTil/SxwZgAN"
         crossorigin="anonymous"></script>
@@ -127,10 +169,12 @@
         // DOM
         const adminSpotList = document.querySelector('#admin-spotList');
         const editConfirmBtn = document.querySelector('#editConfirmBtn');
+        const creatConfirmBtn = document.querySelector('#creatConfirmBtn');
 
 
         // 景點 id 
         let spotId = 1;
+
 
 
 
@@ -148,7 +192,7 @@
 
             api.apiGetUserInfo(userId)
                 .then(res => {
-                    console.log(res);
+                    console.log(res.data);
                     const { data, status } = res;
 
                     if (status === 200) {
@@ -222,11 +266,35 @@
 
 
         // 景點資料 - 新增景點資料
-        function addSpotData() {
+        creatConfirmBtn.addEventListener('click', () => {
+            creatSpotData()
+        });
 
+        function creatSpotData() {
+
+            const data = {
+                category: document.querySelector('#add-spot-category').value,
+                title: document.querySelector('#add-spot-title').value,
+                image: document.querySelector('#add-spot-imageUrl').value,
+                content: document.querySelector('#add-spot-content').value,
+            };
+
+
+            api.apiAdminCreatSpot(data)
+                .then(res => {
+                    console.log(res);
+                    const isOK = res.status === 201 || res.status === 200;
+                    if (isOK) {
+                        swalMassage('新增資料成功', 'success', 500);
+                        setTimeout(() => {
+                            window.location.replace('./dashbaord.html');
+                        }, 300);
+                    };
+                })
+                .catch(err => {
+                    console.log(err.response.data);
+                })
         };
-
-
 
 
 
@@ -255,7 +323,6 @@
                     .catch(err => {
                         console.log(err);
                     })
-                // editSpotData(spotId);
             };
 
             // 刪除
@@ -267,52 +334,57 @@
 
 
 
-
         // 景點資料 - 刪除單筆景點資料
         function delSpotData(id) {
-            console.log("刪除", id);
+            Swal.fire({
+                title: `確定要刪除訂單編號 ${id}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: '確定',
+                cancelButtonText: '取消',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    swalMassage(`刪除訂單編號 ${id}`, 'success', 500);
+
+                    api.apiAdminRemoveSpot(id)
+                        .then(res => {
+                            console.log(res);
+                            getSpots();
+                        })
+                        .catch(err => {
+                            console.log(err);
+                        })
+                }
+            })
         };
-
-
-
 
 
 
         // 景點資料 - 編輯功能
         editConfirmBtn.addEventListener('click', (e) => {
-
-            const userId = getLoggedID();
             const data = {
                 category: document.querySelector('#spot-category').value,
                 title: document.querySelector('#spot-title').value,
                 image: document.querySelector('#spot-imageUrl').value,
                 content: document.querySelector('#spot-content').value,
-                userId,
             };
-
-
 
             api.apiAdminUpdateSpot(spotId, data)
                 .then(res => {
                     console.log(res);
-
                     const isOK = res.status === 201 || res.status === 200;
                     if (isOK) {
-
                         swalMassage('修改資料成功', 'success', 500);
-
                         setTimeout(() => {
                             window.location.replace('./dashbaord.html');
                         }, 300);
-
-
-                        // history.go(-1);
                     };
                 })
                 .catch(err => {
                     console.log(err.response.data);
                 })
-
         });
 
 
@@ -334,7 +406,6 @@
 
 
             getUsersData();
-
         };
 
         init();

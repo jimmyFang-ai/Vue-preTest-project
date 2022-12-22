@@ -44,7 +44,7 @@ function templateOfUserMenu(user, template = '') {
 
        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
            <li>
-               <a class="dropdown-item" href="./my/bookmarks.html">收藏列表</a>
+               <a class="dropdown-item" href="../my/bookmarks.html">收藏列表</a>
            </li>
            <li>
                <a class="dropdown-item" href="#" id="logout-btn">登出</a>

@@ -49,5 +49,10 @@
     }
   ],
   "bookmarks": [
+    {
+      "userId": "1",
+      "spotId": "3",
+      "id": 1
+    }
   ]
 }

@@ -134,11 +134,11 @@
 
                             // 判斷是 role 是 user 還是 admin
                             let redirectPath = '/';
-                            // // const isAdmin = response.data?.user?.role?.includes('admin');
-                            // const isAdmin = response.data?.user?.role === 'admin';
-                            // if (isAdmin) {
-                            //     redirectPath = 'admin/desk.html';
-                            // }
+                            // const isAdmin = response.data?.user?.role?.includes('admin');
+                            const isAdmin = res.data?.user?.role === 'admin';
+                            if (isAdmin) {
+                                redirectPath = '../admin/dashbaord.html';
+                            };
 
 
                             //  0.15 秒後 導到首頁

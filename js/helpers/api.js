@@ -3,14 +3,26 @@ import "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js";
 
 
 //  本地端
-const BASE_URL = `http://localhost:10000`;
+// const BASE_URL = `http://localhost:10000`;
 
 // Render
-// const DOMAINS = `https://vue-pretest-json-server-auth.onrender.com`;
+const DOMAINS = `https://vue-json-server-render.onrender.com`;
+
+
+// 參訪者
+const visitorRequest = axios.create({
+    baseURL: DOMAINS,
+    headers: {
+        'Content-Type': 'application/json',
+    }
+});
+
+
+
 
 // user 使用者
 const userRequest = axios.create({
-    baseURL: BASE_URL,
+    baseURL: DOMAINS,
     headers: {
         'Content-Type': 'application/json',
     }
@@ -19,7 +31,7 @@ const userRequest = axios.create({
 
 // 管理者
 const adminRequest = axios.create({
-    baseURL: BASE_URL,
+    baseURL: DOMAINS,
     headers: {
         'Content-Type': 'application/json',
     }
@@ -62,9 +74,9 @@ adminRequest.interceptors.request.use(
 
 // 課程資訊 API(不用登入)
 // 所有課程資料
-export const apiGetSpots = () => userRequest.get('/spots');
+export const apiGetSpots = () => visitorRequest.get('/spots');
 // 單一課程資料
-export const apiGetSpot = (id) => userRequest.get(`/spots/${id}`);
+export const apiGetSpot = (id) => visitorRequest.get(`/spots/${id}`);
 
 
 
@@ -96,8 +108,9 @@ export const apiAdminGetSpots = () => adminRequest.get('/664/spots');
 // 取得單筆景點(路由代碼:664 ， 寫入有 token 皆可，讀取不用 token)
 export const apiAdminGetSpot = (id) => adminRequest.get(`/664/spots/${id}`);
 // 移除單筆景點(路由代碼:664 ， 寫入有 token 皆可，讀取不用 token)
+export const apiAdminCreatSpot = (data) => adminRequest.post(`/664/spots`, data);
+// 移除單筆景點(路由代碼:664 ， 寫入有 token 皆可，讀取不用 token)
 export const apiAdminRemoveSpot = (id) => adminRequest.delete(`/664/spots/${id}`);
-
 // 移除更新整筆景點(路由代碼:664 ， 寫入有 token 皆可，讀取不用 token)
 export const apiAdminUpdateSpot = (id, data) => adminRequest.put(`/664/spots/${id}`, data);
 
